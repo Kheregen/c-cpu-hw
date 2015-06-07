@@ -6,56 +6,68 @@
 #include "queue.h"
 #include "cpu.c"
 #include "queue.c"
+/********************************************** //
+ *  Homework to PB071/3 with slight changes
+ *  By: Jan Kasztura, UÈO: 422563
+ *
+ *  Can be run with arguments -R and -r <number>
+ * -R runs all instructions in queue
+ * -r runs only <number> of instructions in queue
+ ***********************************************/
 
 
-
+/*
+Runs instructions in queue
+runAll - decides if it should run all instructions in queue
+instRunNum - if runAll is false, specifies how many instructions should be run
+*/
 void instr_run(struct Queue* queue, bool runAll, int instRunNum){
-
-        struct Instruction* temp = queue->first;
-        while(queue->first != NULL && instRunNum > 0){
-            switch(temp->type){
-            case(INST_ADD):
-                mem_register += temp->arg;
-                break;
-            case(INST_SUB):
-                mem_register -= temp->arg;
-                break;
-            case(INST_INC):
-                mem_register++;
-                break;
-            case(INST_DEC):
-                mem_register--;
-                break;
-            case(INST_MUL):
-                mem_register *= temp->arg;
-                break;
-            case(INST_DIV):
-                mem_register /= temp->arg;
-                break;
-            }
-            if(!runAll){
-                instRunNum--;
-            }
-            temp = temp->next;
-            if(queue->first == queue->last){
-                queue->last = temp;
-            }
-            free(queue->first);
-
-            queue->first = temp;
-
+    struct Instruction* temp = queue->first;
+    while(queue->first != NULL && instRunNum > 0){
+        switch(temp->type){
+        case(INST_ADD):
+            mem_register += temp->arg;
+            break;
+        case(INST_SUB):
+            mem_register -= temp->arg;
+            break;
+        case(INST_INC):
+            mem_register++;
+            break;
+        case(INST_DEC):
+            mem_register--;
+            break;
+        case(INST_MUL):
+            mem_register *= temp->arg;
+            break;
+        case(INST_DIV):
+            mem_register /= temp->arg;
+            break;
         }
-
+        if(!runAll){
+            instRunNum--;
+        }
+        temp = temp->next;
+        if(queue->first == queue->last){
+            queue->last = temp;
+        }
+        free(queue->first);
+        queue->first = temp;
+    }
 }
 
-void instr_push(struct Stack* s){
-    stack_push(s);
-}
-
+/*
+Deletes the top value of the stack
+s - stack
+*/
 void instr_pop(struct Stack* s){
     stack_pop(s);
 }
 
+/*
+Deletes all instructions in queue and frees their memory
+q - queue
+*/
 void instr_reset(struct Queue* q){
     struct Instruction* temp = q->first;
     struct Instruction* temp2 = NULL;
@@ -68,16 +80,23 @@ void instr_reset(struct Queue* q){
     q->last = NULL;
 }
 
-
-
+/*
+Creates instruction with no value
+q - queue
+type - type of instruction
+*/
 void instr_novalue(struct Queue* q, enum Instruction_type type){
     struct Instruction* ins = malloc(sizeof(struct Instruction));
     ins->arg = 0;
     ins->next = NULL;
     ins->type = type;
     queue_push(q,ins);
-
 }
+
+/* Creates instruction that takes specific value
+q - queue
+type - type of instruction
+*/
 void instr_value(struct Queue* q,enum Instruction_type type){
     printf("hodnota:");
     int value;
@@ -98,7 +117,6 @@ int main(int argc, char *argv[])
 {
     bool runAll = false;
     int instRunNum = 1;
-
     if ((argc < 2) || (argc > 3)){
         printf("Wrong arguments");
         return -1;
@@ -133,11 +151,11 @@ int main(int argc, char *argv[])
             continue;
         }
         if(strcmp(inst,"push") == 0){
-            instr_push(stack);
+            stack_push(stack);
             continue;
         }
         if(strcmp(inst,"pop") == 0){
-            instr_pop(stack);
+            stack_pop(stack);
             continue;
         }
         if(strcmp(inst,"reset") == 0){
@@ -173,8 +191,8 @@ int main(int argc, char *argv[])
             continue;
         }
     }while(running);
-
-
-
+    free(stack);
+    free(queue);
+    free(inst);
     return 0;
 }
